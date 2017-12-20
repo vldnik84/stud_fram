@@ -1,0 +1,13 @@
+{
+    "name": "mindk/stud_framework",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "ddavidov",
+            "email": "ddavidov@mindk.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {}
+}
