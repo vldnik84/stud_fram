@@ -8,6 +8,9 @@
             "email": "ddavidov@mindk.com"
         }
     ],
+    "autoload": {
+        "psr-4": {"Mindk\\Framework\\": "src/"}
+    },
     "minimum-stability": "dev",
     "require": {}
 }
