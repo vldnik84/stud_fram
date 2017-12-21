@@ -3,10 +3,7 @@
 namespace Mindk\Framework;
 
 /**
- * Created by PhpStorm.
- * User: dimmask
- * Date: 20.12.17
- * Time: 19:44
+ * Application class
  */
 class App
 {
