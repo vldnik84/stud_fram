@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: dimmask
- * Date: 27.12.17
- * Time: 20:20
- */
 
 namespace Mindk\Framework\Routing;
 
@@ -14,18 +8,32 @@ namespace Mindk\Framework\Routing;
  */
 class Router
 {
+    /**
+     * @var Request instance
+     */
     protected $request;
 
+    /**
+     * @var Route map cache
+     */
     protected $map;
 
-    public function __construct($mapping)
+    /**
+     * Router constructor.
+     *
+     * @param $mapping Route mapping
+     */
+    public function __construct(array $mapping)
     {
         $this->request = $_SERVER['REQUEST_URI'];
         $this->map = $mapping;
     }
 
+    /**
+     * Find matching route, using routing map
+     */
     public function findRoute(){
-        //@TODO: Find rel.
+        //@TODO: Find matching route
     }
 
 }

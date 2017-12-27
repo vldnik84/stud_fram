@@ -18,7 +18,7 @@ class App
      * App constructor.
      * @param $config
      */
-    public function __construct($config)
+    public function __construct(array $config)
     {
         $this->config = $config;
     }
@@ -27,6 +27,7 @@ class App
      * Run the app
      */
     public function run(){
+
         $router = new Router( $this->config['routes'] );
         $route = $router->findRoute();
 
