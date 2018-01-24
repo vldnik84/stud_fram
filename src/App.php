@@ -32,7 +32,7 @@ class App
         $route = $router->findRoute();
 
         if(!empty($route)){
-            //@TODO: Implement call handler
+            print_r($route);
         } else {
             //@TODO: Return 404 Response
         }
