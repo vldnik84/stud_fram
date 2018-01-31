@@ -4,6 +4,7 @@ namespace Mindk\Framework;
 
 use Mindk\Framework\Routing\Route;
 use Mindk\Framework\Routing\Router;
+use Mindk\Framework\Http\Request\Request;
 
 /**
  * Application class
@@ -29,7 +30,8 @@ class App
      */
     public function run(){
 
-        $router = new Router( $this->config['routes'] );
+        $request = new Request();
+        $router = new Router($request, $this->config['routes'] );
         $route = $router->findRoute();
 
         if($route instanceof Route){
@@ -41,7 +43,7 @@ class App
                 $methodReflection = $controllerReflection->getMethod($route->action);
                 $methodReflection->invokeArgs($controller, $route->params);
             } else {
-                // TODO: throw exception
+                //@TODO: throw exception
             }
         } else {
             //@TODO: Return 404 Response

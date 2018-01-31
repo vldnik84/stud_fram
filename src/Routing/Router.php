@@ -2,6 +2,7 @@
 
 namespace Mindk\Framework\Routing;
 
+use Mindk\Framework\Http\Request\Request;
 use Mindk\Framework\Routing\Route;
 
 /**
@@ -25,11 +26,9 @@ class Router
      *
      * @param $mapping Route mapping
      */
-    public function __construct(array $mapping)
+    public function __construct(Request $request, array $mapping)
     {
-        $this->currentUri = $_SERVER['REQUEST_URI'];
-        $this->requestMethod = $_SERVER['REQUEST_METHOD'];
-
+        $this->request = $request;
         $this->map = $mapping;
     }
 
@@ -43,8 +42,8 @@ class Router
             foreach ($this->map as $name => $routeData){
                 $path = $routeData['path'];
                 $pattern = $this->transformToRegexp($path);
-                if(preg_match($pattern, $this->currentUri, $matches)){
-                    if(!empty($routeData['method']) && strtoupper($this->requestMethod) != strtoupper($routeData['method'])) {
+                if(preg_match($pattern, $this->request->getUri(), $matches)){
+                    if(!empty($routeData['method']) && $this->request->getMethod() != strtoupper($routeData['method'])) {
                        continue;
                     }
 
@@ -99,7 +98,7 @@ class Router
             // Get param names:
             $paramNames = $matches[1];
             // Get param values:
-            preg_match($this->transformToRegexp($path), $this->currentUri, $paramMatches);
+            preg_match($this->transformToRegexp($path), $this->request->getUri(), $paramMatches);
             array_shift($paramMatches); // Get rid of 0th element
             $paramValues = $paramMatches;
 
