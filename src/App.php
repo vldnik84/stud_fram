@@ -37,8 +37,7 @@ class App
     public function run(){
 
         try{
-            $request = new Request();
-            $router = new Router($request, $this->config->get('routes', []) );
+            $router = Injector::make('router', ['mapping' => $this->config->get('routes', []) ] );
             $route = $router->findRoute();
 
             if($route instanceof Route){
@@ -46,11 +45,12 @@ class App
                 $controllerReflection = new \ReflectionClass($route->controller);
 
                 if($controllerReflection->hasMethod($route->action)){
-                    $controller = $controllerReflection->newInstance();
+                    $controller = Injector::make($route->controller);
                     $methodReflection = $controllerReflection->getMethod($route->action);
 
                     // Get response from responsible controller:
-                    $response = $methodReflection->invokeArgs($controller, $route->params);
+                    $paramset = Injector::resolveParams($methodReflection->getParameters(), $route->params);
+                    $response = $methodReflection->invokeArgs($controller, $paramset);
 
                     // Ensure it's Response subclass or wrap with JsonResponse:
                     if(!($response instanceof Response)){
