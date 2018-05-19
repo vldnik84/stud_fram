@@ -27,7 +27,7 @@ class App
      */
     public function __construct(array $config)
     {
-        $this->config = new Config($config);
+        $this->config = Config::getInstance($config);
         Injector::setConfig($this->config);
     }
 
