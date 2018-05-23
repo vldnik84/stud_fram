@@ -3,7 +3,6 @@
 namespace Mindk\Framework\Controllers;
 
 use Mindk\Framework\Exceptions\AuthRequiredException;
-// use Mindk\Framework\Exceptions\IncorrectInputException;
 use Mindk\Framework\Http\Request\Request;
 use Mindk\Framework\Models\UserModel;
 use Mindk\Framework\Http\Response\JsonResponse;
@@ -15,51 +14,58 @@ use Mindk\Framework\Http\Response\JsonResponse;
 class UserController
 {
     /**
+     * @var string  DB Table standard keys
+     */
+    //protected $defaultRoleId = 2;
+
+    /**
      * Register through action
      *
      * @param Request $request
      * @param UserModel $model
+     *
+     * @return JsonResponse
+     * @throws \Mindk\Framework\Exceptions\ModelException
      */
     public function register(Request $request, UserModel $model) {
 
-        $loginColumnName = 'email';
         $errors = [];
 
-        $login = $request->get('login', '', 'string');
-        $password = $request->get('password', '', 'string');
-        $confirmPassword = $request->get('confirm_password', '', 'string');
-
+        $login = $request->get($model::LOGIN_NAME, '', 'string');
+        $password = $request->get($model::PASSWORD_NAME, '', 'string');
+        $confirmPassword = $request->get('confirm_' . $model::PASSWORD_NAME, '', 'string');
 
 
         if(!empty($login) && filter_var($login, FILTER_VALIDATE_EMAIL)) {
 
-            foreach ($model->getList( $loginColumnName ) as $value) {
-                if ($value->{$loginColumnName} === $login) {
-                    $errors['email'] = 'This e-mail address is already registered.';
+            foreach ($model->getList( $model::LOGIN_NAME ) as $value) {
+
+                if ($value->{$model::LOGIN_NAME} === $login) {
+                    $errors[$model::LOGIN_NAME] = 'This e-mail address is already registered.';
                     break;
                 }
             }
 
             if($password === $confirmPassword) {
-                if(!empty($password) && strlen($password) > 3 && strlen($password) < 17) {
+
+                if(!empty($password) && strlen($password) > 5 && strlen($password) < 17) {
 
                     $token = md5(uniqid());
 
-                    $model->create( array($loginColumnName => $login,
-                        'password' => md5($password), 'token' => $token) );
+                    $model->create( array($model::LOGIN_NAME => $login,
+                        $model::PASSWORD_NAME => md5($password), $model::TOKEN_NAME => $token) );
 
                 } else {
-                    $errors['password'] = 'Password length should be between 4 and 16 symbols.';
+                    $errors[$model::PASSWORD_NAME] = 'Password length should be between 6 and 16 symbols.';
                 }
 
             } else {
-                $errors['password'] = 'Passwords do not match.';
+                $errors[$model::PASSWORD_NAME] = 'Passwords do not match.';
             }
 
         } else {
-            $errors['email'] = 'Please, provide a correct e-mail address.';
+            $errors[$model::LOGIN_NAME] = 'Please, provide a correct e-mail address.';
         }
-
 
 
         $response = new JsonResponse($errors);
@@ -68,7 +74,7 @@ class UserController
             $response->setHeader('X-Auth', $token);
         }
 
-        $response->send();
+        return $response;
     }
 
     /**
@@ -77,6 +83,7 @@ class UserController
      * @param Request $request
      * @param UserModel $model
      *
+     * @return mixed
      * @throws AuthRequiredException
      */
     public function login(Request $request, UserModel $model) {
@@ -91,22 +98,28 @@ class UserController
         }
 
         // Generate new access token and save:
-        $user->token = md5(uniqid());
+        $user->{$model::TOKEN_NAME} = md5(uniqid());
         $user->save();
 
         $response = new JsonResponse(null);
-        $response->setHeader('X-Auth', $user->token);
-        $response->send();
+        $response->setHeader('X-Auth', $user->{$model::TOKEN_NAME});
 
-        //return $user->token;
+        return $response;
     }
 
     /**
      * Logout
      *
      * @param Request $request
+     * @param UserModel $model
      */
-    public function logout(Request $request) {
+    public function logout(Request $request, UserModel $model) {
+
+        if ( $user = $model->findByToken($request->headers['X-Auth']) ) {
+            $user->{$model::TOKEN_NAME} = '';
+            $model->clearValue( $user->{$model::PRIMARY_KEY}, $model::TOKEN_NAME );
+        }
+
         $request->headers['X-Auth'] = null;
     }
 }
