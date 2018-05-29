@@ -5,7 +5,6 @@ namespace Mindk\Framework\Controllers;
 use Mindk\Framework\Exceptions\AuthRequiredException;
 use Mindk\Framework\Http\Request\Request;
 use Mindk\Framework\Models\UserModel;
-use Mindk\Framework\Http\Response\JsonResponse;
 
 /**
  * Class UserController
@@ -14,17 +13,11 @@ use Mindk\Framework\Http\Response\JsonResponse;
 class UserController
 {
     /**
-     * @var string  DB Table standard keys
-     */
-    //protected $defaultRoleId = 2;
-
-    /**
      * Register through action
      *
      * @param Request $request
      * @param UserModel $model
-     *
-     * @return JsonResponse
+     * @return array|string
      * @throws \Mindk\Framework\Exceptions\ModelException
      */
     public function register(Request $request, UserModel $model) {
@@ -68,13 +61,11 @@ class UserController
         }
 
 
-        $response = new JsonResponse($errors);
-
-        if (!empty($token)) {
-            $response->setHeader('X-Auth', $token);
+        if(!empty($token)) {
+            return $token;
+        } else {
+            return $errors;
         }
-
-        return $response;
     }
 
     /**
@@ -101,10 +92,7 @@ class UserController
         $user->{$model::TOKEN_NAME} = md5(uniqid());
         $user->save();
 
-        $response = new JsonResponse(null);
-        $response->setHeader('X-Auth', $user->{$model::TOKEN_NAME});
-
-        return $response;
+        return $user->{$model::TOKEN_NAME};
     }
 
     /**
@@ -115,7 +103,7 @@ class UserController
      */
     public function logout(Request $request, UserModel $model) {
 
-        if ( $user = $model->findByToken($request->headers['X-Auth']) ) {
+        if( $user = $model->findByToken($request->headers['X-Auth']) ) {
             $user->{$model::TOKEN_NAME} = '';
             $model->clearValue( $user->{$model::PRIMARY_KEY}, $model::TOKEN_NAME );
         }
